@@ -8,6 +8,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.PremierLeague.model.ConnessioniMax;
+import it.polito.tdp.PremierLeague.model.Mese;
 import it.polito.tdp.PremierLeague.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -39,7 +42,7 @@ public class FXMLController {
     private TextField txtMinuti; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbMese"
-    private ComboBox<?> cmbMese; // Value injected by FXMLLoader
+    private ComboBox<Mese> cmbMese; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbM1"
     private ComboBox<?> cmbM1; // Value injected by FXMLLoader
@@ -52,12 +55,41 @@ public class FXMLController {
 
     @FXML
     void doConnessioneMassima(ActionEvent event) {
+    	txtResult.clear();
+    	if(model.getGrafo()==null) {
+    		txtResult.setText("CREARE PRIMA IL GRAFO");
+    		return;
+    	}
     	
+    	txtResult.appendText("Coppia/e con connessioni massime: \n");
+    	for(ConnessioniMax cm:model.getConnessioniMax()) {
+    		txtResult.appendText(cm.toString()+"\n");
+    	}
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	txtResult.clear();
     	
+    	Mese m=cmbMese.getValue();
+    	if(m==null) {
+    		txtResult.setText("SELEZIONARE UN MESE");
+    		return;
+    	}
+    	
+    	String minutiS=txtMinuti.getText();
+    	int minuti;
+    	try {
+    		minuti=Integer.parseInt(minutiS);
+    	} catch (NumberFormatException e) {
+    		txtResult.setText("INSERIRE UN NUMERO INTERO NEL CAMPO DEI MINUTI");
+    		return;
+    	}
+    	
+    	model.creaGrafo(m.getMeseN(), minuti);
+    	
+    	txtResult.appendText("#vertici: "+model.getNumVertici());
+    	txtResult.appendText("\n#archi: "+model.getNumArchi());
     }
 
     @FXML
@@ -79,7 +111,11 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
-  
+    	
+    	List<Mese> mesi=new ArrayList<>();
+    	for(int i=1; i<13; i++)
+    		mesi.add(new Mese(i));
+    	cmbMese.getItems().addAll(mesi);
     }
     
     
