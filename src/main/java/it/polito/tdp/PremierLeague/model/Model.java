@@ -18,6 +18,9 @@ public class Model {
 	private SimpleWeightedGraph<Match, DefaultWeightedEdge> grafo;
 	private Map<Integer, Match> idMap;
 	
+	private List<Match> percorsoMigliore;
+	private int pesoMax;
+	
 	public Model() {
 		dao=new PremierLeagueDAO();
 		idMap=new HashMap<>();
@@ -67,5 +70,59 @@ public class Model {
 		
 		return result;
 	}
+	
+	public List<Match> getCollegamento(Match m1, Match m2) {
+		percorsoMigliore=new ArrayList<>();
+		pesoMax=0;
+		
+		List<Match> parziale=new ArrayList<>();
+		parziale.add(m1);
+		int pesoParziale=0;
+		
+		cerca(m2, parziale, pesoParziale);
+		
+		return percorsoMigliore;
+	}
+	
+	public int getPesoCollegamento() {
+		return pesoMax;
+	}
+
+	private void cerca(Match destinazione, List<Match> parziale, int pesoParziale) {
+		//caso terminale
+		if(parziale.get(parziale.size()-1).equals(destinazione)) {
+			if(pesoParziale>pesoMax) {
+				this.percorsoMigliore=new ArrayList<>(parziale);
+				pesoMax=pesoParziale;
+			}
+			return;
+		}
+		
+		
+		//ricorsione
+		for(DefaultWeightedEdge e:grafo.edgesOf(parziale.get(parziale.size()-1))) {
+			//controllo che il vertice che vado ad inserire non sia già in parziale,
+			//perchè in quel caso avrei un ciclo
+			Match vicino=Graphs.getOppositeVertex(grafo, e, parziale.get(parziale.size()-1));
+			if(!parziale.contains(vicino)) {
+				
+				//devo anche controllare che non passi da match T1vsT2 a match con T2vsT1
+				
+				int casaPartenza=parziale.get(parziale.size()-1).teamHomeID;
+				int casaArrivo=vicino.teamHomeID;
+				int ospitiPartenza=parziale.get(parziale.size()-1).teamAwayID;
+				int ospitiArrivo=vicino.teamAwayID;
+				
+				if(!(casaPartenza==ospitiArrivo || ospitiPartenza==casaArrivo)) {
+					parziale.add(vicino);
+					pesoParziale+=grafo.getEdgeWeight(e);
+					cerca(destinazione, parziale, pesoParziale);
+					pesoParziale-=grafo.getEdgeWeight(e);
+					parziale.remove(parziale.size()-1);
+				}
+			}
+		}
+	}
+
 	
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.PremierLeague.model.ConnessioniMax;
+import it.polito.tdp.PremierLeague.model.Match;
 import it.polito.tdp.PremierLeague.model.Mese;
 import it.polito.tdp.PremierLeague.model.Model;
 import javafx.event.ActionEvent;
@@ -45,10 +46,10 @@ public class FXMLController {
     private ComboBox<Mese> cmbMese; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbM1"
-    private ComboBox<?> cmbM1; // Value injected by FXMLLoader
+    private ComboBox<Match> cmbM1; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbM2"
-    private ComboBox<?> cmbM2; // Value injected by FXMLLoader
+    private ComboBox<Match> cmbM2; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtResult"
     private TextArea txtResult; // Value injected by FXMLLoader
@@ -90,11 +91,27 @@ public class FXMLController {
     	
     	txtResult.appendText("#vertici: "+model.getNumVertici());
     	txtResult.appendText("\n#archi: "+model.getNumArchi());
+    	
+    	cmbM1.getItems().addAll(model.getGrafo().vertexSet());
+    	cmbM2.getItems().addAll(model.getGrafo().vertexSet());
     }
 
     @FXML
     void doCollegamento(ActionEvent event) {
+    	txtResult.clear();
     	
+    	Match m1=cmbM1.getValue();
+    	Match m2=cmbM2.getValue();
+    	
+    	if(m1==null || m2==null) {
+    		txtResult.setText("SELEZIONARE DUE MATCH");
+    		return;
+    	}
+    	
+    	for(Match m: model.getCollegamento(m1, m2))
+    		txtResult.appendText(m.getMatchID()+"\n");
+    	
+    	txtResult.appendText("Il percorso ha peso totale: "+model.getPesoCollegamento());
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
